@@ -28,6 +28,8 @@ const useLoadFonts = () => {
                     'Roboto-Regular': require('./../../assets/fonts/Roboto-Regular.ttf'),
                     'Roboto-SemiBold': require('./../../assets/fonts/Roboto-SemiBold.ttf'),
                     'Roboto-ExtraBold': require('./../../assets/fonts/Roboto-ExtraBold.ttf'),
+                    'Norwester': require('./../../assets/fonts/norwester.ttf'),
+                    'Gilroy': require('./../../assets/fonts/Gilroy-Bold.ttf'),
                 });
                 setFontsLoaded(true);
                 console.log('Fonts loaded successfully.');

@@ -49,7 +49,7 @@ const exerciseSlice = createSlice({
     // New reducer for resetting to default values
     resetExercises: (state) => {
       state.exerciseValue = null;
-      state.intensityValue = 'beginner';
+      // state.intensityValue = 'beginner';
       state.exerciseData = {
         duration: '',
         repetitions: '',
@@ -77,14 +77,14 @@ export const initializeExerciseData = () => async (dispatch) => {
   try {
     let savedIntensity = await AsyncStorage.getItem('SelectedIntensity');
     if (!savedIntensity) {
-      savedIntensity = 'intermediate';
+      savedIntensity = 'beginner';
       await AsyncStorage.setItem('SelectedIntensity', savedIntensity);
     }
     dispatch(setIntensityValue(savedIntensity));
 
     const storedExercises = await AsyncStorage.getItem('ExerciseDatabase');
+    
     let loadedExercises;
-
     if (!storedExercises) {
       loadedExercises = exercises.map(({ id, name, intensity, description }) => ({
         id,
@@ -92,6 +92,7 @@ export const initializeExerciseData = () => async (dispatch) => {
         intensity,
         description,
       }));
+      await AsyncStorage.setItem('ExerciseDatabase', JSON.stringify(loadedExercises));
       await AsyncStorage.setItem('ExerciseDatabase', JSON.stringify(loadedExercises));
     } else {
       loadedExercises = JSON.parse(storedExercises);

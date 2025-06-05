@@ -68,10 +68,10 @@ const styles = StyleSheet.create({
 	},
 
 	headerText: {
-		fontSize: hp(5),
+		fontSize: hp(6),
 		fontFamily: "Roboto-ExtraBold",
 		color: "#161616",
-		letterSpacing: -1.5,
+		letterSpacing: -2,
 	},
 
 	subHeader: {

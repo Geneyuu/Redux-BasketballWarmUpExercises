@@ -12,7 +12,7 @@ const useCheckOnboardingStatus = () => {
 
                 if (hasOnboarded === 'true') {
                     console.log('Already onboarded, going to Home.');
-                    router.replace('/OnBoarding');
+                    router.replace('/(tabs)/home');
                 } else {
                     console.log('First time user, going to Onboarding.');
                     router.replace('/OnBoarding');

@@ -44,7 +44,7 @@ const OnBoarding = () => {
 
 	const onDone = async () => {
 		try {
-			await AsyncStorage.setItem("hasOnboarded", "false");
+			await AsyncStorage.setItem("hasOnboarded", "true");
 			router.replace("/(tabs)/home");
 		} catch (error) {
 			console.log("Error saving onboarding state:", error);

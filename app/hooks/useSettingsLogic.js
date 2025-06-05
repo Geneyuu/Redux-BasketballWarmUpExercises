@@ -138,33 +138,33 @@ const useSettingsLogic = () => {
   // Confirmation alerts before saving
 const handleSaveDurationWithConfirm = () => {
   Alert.alert(
-    "Confirm Save",
-    `Are you sure you want to save the\nduration: to ${duration} seconds?`,
+    "Confirmation to Save",
+    `Are you sure you want to save\nDURATION: to ${duration} seconds?`,
     [
       { text: "Cancel", style: "cancel" },
-      { text: "Okay", onPress: () => handleSave("duration", duration) },
+      { text: "CONFIRM", onPress: () => handleSave("duration", duration) },
     ]
   );
 };
 
 const handleSaveRepetitionsWithConfirm = () => {
   Alert.alert(
-    "Confirm Save",
-    `Are you sure you want to save the repetitions: ${repetitions} reps?`,
+    "Confirmation to Save",
+    `Are you sure you want to save\nREPETITIONS: to ${repetitions} reps?`,
     [
       { text: "Cancel", style: "cancel" },
-      { text: "Okay", onPress: () => handleSave("repetitions", repetitions) },
+      { text: "CONFIRM", onPress: () => handleSave("repetitions", repetitions) },
     ]
   );
 };
 
 const handleSaveRestDurationWithConfirm = () => {
   Alert.alert(
-    "Confirm Save",
-    `Are you sure you want to save the rest duration: ${restDuration} seconds?`,
+    "Confirm to Save",
+    `Are you sure you want to save\n REST TIMER: ${restDuration} seconds?`,
     [
       { text: "Cancel", style: "cancel" },
-      { text: "Okay", onPress: () => handleSave("restDuration", restDuration) },
+      { text: "CONFIRM", onPress: () => handleSave("restDuration", restDuration) },
     ]
   );
 };
