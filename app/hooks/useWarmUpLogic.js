@@ -1,22 +1,15 @@
-import { useFocusEffect, useRouter } from 'expo-router';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useFocusEffect, usePathname, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Alert } from 'react-native';
 import { useSelector } from 'react-redux';
-import exercises from '../constants/exercises';
+import { exercises } from '../constants/exercises';
 
 export const useWarmUpLogic = () => {
     const { allExercises, intensityValue } = useSelector((state) => state.exercise);
-	console.log(intensityValue);
-
-    const limitedExercises = exercises.slice(0, 18).map((exercise) => {
-        const updatedExercise = allExercises.find((ex) => ex.id === exercise.id);
-        return {
-            ...exercise,
-            intensity: updatedExercise?.intensity || exercise.intensity,
-        };
-    });
 
     const router = useRouter();
+    const pathname = usePathname();
     const videoRef = useRef(null);
     const isRestingRef = useRef(false);
 
@@ -25,17 +18,54 @@ export const useWarmUpLogic = () => {
     const [isResting, setIsResting] = useState(false);
     const [remainingTime, setRemainingTime] = useState(0);
 
+
+useEffect(() => {
+    console.log('Current pathname:', pathname);
+}, [pathname]);
+
+
+    const path = pathname
+    let sliceStart = 0;
+    let sliceEnd = 0;
+
+    if (path.includes('LowerBody')) {
+        sliceStart = 5; 
+        sliceEnd = 10;
+    } else if (path.includes('UpperBody')) {
+        sliceStart = 10;
+        sliceEnd = 15;
+    } else if (path.includes('WholeBody')) {
+        sliceStart = 0;
+        sliceEnd = 18;
+    } else if (path.includes('DynamicExercises')) {
+        sliceStart = 15;
+        sliceEnd = 18;
+    } else {
+        sliceStart = 0;
+        sliceEnd = 18;
+    }
+
+    // ✅ Combine constant and asyncStorage exercises
+    const limitedExercises = exercises.slice(sliceStart, sliceEnd).map((exercise) => {
+        const updatedExercise = allExercises.find((ex) => ex.id === exercise.id);
+        return {
+            ...exercise,
+            intensity: updatedExercise?.intensity ||exercise.intensity,
+        };
+    });
+
     const currentExercise = limitedExercises[currentExerciseIndex];
     const intensitySettings = currentExercise.intensity[intensityValue];
 
     const nextExercise =
-        currentExerciseIndex < limitedExercises.length - 1 ? limitedExercises[currentExerciseIndex + 1] : null;
+        currentExerciseIndex < limitedExercises.length - 1
+            ? limitedExercises[currentExerciseIndex + 1]
+            : null;
 
     useEffect(() => {
         const newDuration = isResting ? intensitySettings.restDuration.min : intensitySettings.duration.min;
         setRemainingTime(newDuration);
     }, [intensityValue, isResting, allExercises]);
-
 
     const totalDuration = isResting ? intensitySettings.restDuration.min : intensitySettings.duration.min;
     const progress = 1 - remainingTime / totalDuration;
@@ -71,7 +101,6 @@ export const useWarmUpLogic = () => {
 
         return () => clearInterval(timer);
     }, [isPlaying, isResting, intensityValue, allExercises]);
-
 
     const togglePlayPause = async () => {
         if (isPlaying) {
@@ -119,6 +148,6 @@ export const useWarmUpLogic = () => {
         togglePlayPause,
         handleRestart,
         limitedExercises,
-		intensityValue
+        intensityValue,
     };
 };

@@ -13,7 +13,7 @@ import {
   setRestDuration,
   updateExerciseDataInStorageById,
 } from "../../app/store/slices/exerciseSlice";
-import exercises from '../constants/exercises';
+import { exercises } from '../constants/exercises';
 
 const INTENSITY_BG_COLOR = {
   beginner: "#d0f5e7",

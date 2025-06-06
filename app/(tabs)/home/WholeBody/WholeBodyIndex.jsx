@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { exercises } from '../../../constants/exercises';
+import { useState } from 'react';
+import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { exercises } from '../../../constants/exercises';
 
 // Exercise Item
-const ExerciseItem = React.memo(({ id, name, image }) => {
+const ExerciseItem = ({ id, name, image }) => {
     const router = useRouter();
     const [isClickable, setIsClickable] = useState(true);
 
@@ -27,7 +27,7 @@ const ExerciseItem = React.memo(({ id, name, image }) => {
             </TouchableOpacity>
         </View>
     );
-});
+};
 
 // Sticky Start Button
 const StickyButton = () => {
@@ -68,7 +68,7 @@ const WholeBodyIndex = () => {
             {/*  */}
             <FlatList
                 data={exercises.slice(0, 18)}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={(item) => item.id.toString()}
                 renderItem={renderExerciseItem}
                 contentContainerStyle={styles.scrollOnlyExercises}
                 showsVerticalScrollIndicator={true}
