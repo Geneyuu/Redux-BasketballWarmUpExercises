@@ -28,24 +28,30 @@ useEffect(() => {
     let sliceStart = 0;
     let sliceEnd = 0;
 
-    if (path.includes('LowerBody')) {
-        sliceStart = 5; 
-        sliceEnd = 10;
-    } else if (path.includes('UpperBody')) {
-        sliceStart = 10;
-        sliceEnd = 15;
-    } else if (path.includes('WholeBody')) {
-        sliceStart = 0;
-        sliceEnd = 18;
-    } else if (path.includes('DynamicExercises')) {
-        sliceStart = 15;
-        sliceEnd = 18;
-    } else {
-        sliceStart = 0;
-        sliceEnd = 18;
+    switch (true) {
+        case path.includes('LowerBody'):
+            sliceStart = 5;
+            sliceEnd = 10;
+            break;
+        case path.includes('UpperBody'):
+            sliceStart = 10;
+            sliceEnd = 15;
+            break;
+        case path.includes('WholeBody'):
+            sliceStart = 0;
+            sliceEnd = 18;
+            break;
+        case path.includes('DynamicExercises'):
+            sliceStart = 15;
+            sliceEnd = 18;
+            break;
+        default:
+            sliceStart = 0;
+            sliceEnd = 18;
+            break;
     }
 
-    // ✅ Combine constant and asyncStorage exercises
+    // Combine constant and asyncStorage exercises
     const limitedExercises = exercises.slice(sliceStart, sliceEnd).map((exercise) => {
         const updatedExercise = allExercises.find((ex) => ex.id === exercise.id);
         return {
@@ -134,6 +140,8 @@ useEffect(() => {
     useEffect(() => {
         isRestingRef.current = isResting;
     }, [isResting]);
+
+    console.log(isResting);
 
     return {
         videoRef,

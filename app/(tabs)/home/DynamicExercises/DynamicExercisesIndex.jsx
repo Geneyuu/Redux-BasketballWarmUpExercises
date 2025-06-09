@@ -67,7 +67,7 @@ const WholeBodyIndex = () => {
 
                {/*  */}
                <FlatList
-                    data={exercises.slice(0, 18)}
+                    data={exercises.slice(15, 18)}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderExerciseItem}
                     contentContainerStyle={styles.scrollOnlyExercises}

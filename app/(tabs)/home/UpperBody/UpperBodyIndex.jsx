@@ -1,62 +1,49 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { exercises } from '../../../constants/exercises';
 
-// Exercise Item
-const ExerciseItem = ({ id, name, image }) => {
+const UpperBodyIndex = () => {
      const router = useRouter();
-     const [isClickable, setIsClickable] = useState(true);
+     const [clickedId, setClickedId] = useState(null);
+     const [startClickable, setStartClickable] = useState(true);
 
-     const handlePress = () => {
-          if (!isClickable) return;
-          setIsClickable(false);
+     const handleExercisePress = (id) => {
+          if (clickedId !== null) return;
+          setClickedId(id);
           router.push(`/home/UpperBody/${id}`);
-          const timeout = setTimeout(() => setIsClickable(true), 1300);
+          const timeout = setTimeout(() => setClickedId(null), 1300);
           return () => clearTimeout(timeout);
      };
 
-     return (
+     const handleStartPress = () => {
+          if (!startClickable) return;
+          setStartClickable(false);
+          router.push('/home/UpperBody/StartWarmUps');
+          setTimeout(() => setStartClickable(true), 1300);
+     };
+
+     const renderExerciseItem = ({ item }) => (
           <View style={styles.cardContainer}>
-               <TouchableOpacity onPress={handlePress} disabled={!isClickable} style={styles.card}>
-                    <Image source={image} style={styles.exerciseImage} />
+               <TouchableOpacity
+                    onPress={() => handleExercisePress(item.id)}
+                    disabled={clickedId !== null}
+                    style={styles.card}
+               >
+                    <Image source={item.image} style={styles.exerciseImage} />
                     <View style={styles.textContainer}>
-                         <Text style={styles.exerciseText}>{name}</Text>
+                         <Text style={styles.exerciseText}>{item.name}</Text>
+                         <Ionicons name="chevron-forward-outline" size={wp(5.5)} color="#161616" />
                     </View>
                </TouchableOpacity>
           </View>
      );
-};
-
-// Sticky Start Button
-const StickyButton = () => {
-     const router = useRouter();
-     const [isClickable, setIsClickable] = useState(true);
-
-     const handlePress = () => {
-          if (!isClickable) return;
-          setIsClickable(false);
-          router.push('/home/UpperBody/StartWarmUps');
-          setTimeout(() => setIsClickable(true), 1300);
-     };
-
-     return (
-          <View style={styles.stickyButtonContainer}>
-               <TouchableOpacity style={styles.stickyButton} onPress={handlePress}>
-                    <Text style={styles.stickyButtonText}>Start Warmups</Text>
-               </TouchableOpacity>
-          </View>
-     );
-};
-
-const UpperBodyIndex = () => {
-     const renderExerciseItem = ({ item }) => <ExerciseItem {...item} />;
 
      return (
           <View style={{ flex: 1, backgroundColor: '#fff' }}>
-               {/*  */}
-               <View style={{ padding: wp(4) }}>
+               <View style={{ padding: wp(5) }}>
                     <Image
                          source={require('../../../../assets/images/wholebodypreview.png')}
                          style={styles.mainImage}
@@ -68,9 +55,8 @@ const UpperBodyIndex = () => {
                     <Text style={styles.subheading}>Included exercises:</Text>
                </View>
 
-               {/*  */}
                <FlatList
-                    data={exercises.slice(5, 10)}
+                    data={exercises.slice(10, 15)}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderExerciseItem}
                     contentContainerStyle={styles.scrollOnlyExercises}
@@ -79,8 +65,11 @@ const UpperBodyIndex = () => {
                     maxToRenderPerBatch={5}
                />
 
-               {/* Sticky Start Button */}
-               <StickyButton />
+               <View style={styles.stickyButtonContainer}>
+                    <TouchableOpacity style={styles.stickyButton} onPress={handleStartPress}>
+                         <Text style={styles.stickyButtonText}>Start Warmups</Text>
+                    </TouchableOpacity>
+               </View>
           </View>
      );
 };
@@ -134,7 +123,9 @@ const styles = StyleSheet.create({
      },
      textContainer: {
           flex: 1,
-          justifyContent: 'center',
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          paddingInline: 10,
      },
      exerciseText: {
           fontSize: wp(4),
