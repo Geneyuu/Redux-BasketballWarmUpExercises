@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useWarmUpLogic } from './../../../hooks/useWarmUpLogic';
 import Controls from './components/Controls';
@@ -23,10 +24,17 @@ const StartWarmUps = () => {
           limitedExercises,
      } = useWarmUpLogic();
 
+     const [isSpeaking, setIsSpeaking] = useState(false);
+
      return (
           <View style={styles.container}>
                {isResting ? (
-                    <RestScreen remainingTime={remainingTime} nextExercise={nextExercise} progress={progress} />
+                    <RestScreen
+                         remainingTime={remainingTime}
+                         nextExercise={nextExercise}
+                         progress={progress}
+                         isResting={isResting}
+                    />
                ) : (
                     <>
                          <VideoPlayer videoRef={videoRef} videoSource={currentExercise.video} isPlaying={isPlaying} />
@@ -37,12 +45,17 @@ const StartWarmUps = () => {
                               allExercises={limitedExercises}
                               intensitySettings={intensitySettings}
                               intensityValue={intensityValue}
+                              isResting={isResting}
+                              isSpeaking={isSpeaking}
+                              setIsSpeaking={setIsSpeaking}
                          />
 
                          <Controls
                               isPlaying={isPlaying}
                               togglePlayPause={togglePlayPause}
                               handleRestart={handleRestart}
+                              currentExercise={currentExercise}
+                              setIsSpeaking={setIsSpeaking}
                          />
 
                          <ProgressBar progress={progress} remainingTime={remainingTime} />

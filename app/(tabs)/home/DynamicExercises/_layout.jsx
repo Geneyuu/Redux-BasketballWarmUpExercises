@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Stack, useRouter, usePathname } from 'expo-router';
-import { TouchableOpacity, View, Text, StatusBar } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { useFocusEffect } from '@react-navigation/native';
+import { Stack, useRouter } from 'expo-router';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Layout = () => {
      const router = useRouter();
@@ -141,28 +139,28 @@ const Layout = () => {
                                                   style={{
                                                        flexDirection: 'row',
                                                        alignItems: 'center',
-                                                       padding: 5,
+                                                       padding: 10,
                                                        marginTop: hp(2.5),
                                                        zIndex: 10,
                                                   }}
                                              >
-                                                  <Ionicons name="arrow-back" size={hp(4)} color="white" />
+                                                  <Ionicons name="arrow-back" size={hp(3)} color="black" />
                                                   <Text
                                                        style={{
-                                                            color: 'white',
+                                                            color: 'black',
                                                             fontSize: hp(2),
                                                             marginLeft: wp(2),
                                                             fontFamily: 'Roboto-SemiBold',
                                                        }}
                                                   >
-                                                       Back
+                                                       {/* Back */}
                                                   </Text>
                                              </TouchableOpacity>
 
                                              <View style={{ flex: 1, alignItems: 'center' }}>
                                                   <Text
                                                        style={{
-                                                            color: 'white',
+                                                            color: 'black',
                                                             fontSize: hp(2.5),
                                                             fontFamily: 'Roboto-Bold',
                                                        }}

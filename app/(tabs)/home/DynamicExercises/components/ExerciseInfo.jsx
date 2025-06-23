@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as Speech from 'expo-speech';
-import { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 const ExerciseInfo = ({
@@ -9,10 +8,9 @@ const ExerciseInfo = ({
      allExercises,
      intensitySettings,
      intensityValue,
-     isResting,
+     isSpeaking,
+     setIsSpeaking,
 }) => {
-     const [isSpeaking, setIsSpeaking] = useState(false);
-
      const speak = () => {
           const description = currentExercise?.description || '';
 
@@ -92,7 +90,7 @@ const styles = StyleSheet.create({
           backgroundColor: 'white',
           borderTopLeftRadius: 20,
           borderTopRightRadius: 20,
-          marginTop: hp('-7%'),
+          marginTop: hp('-10%'),
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
@@ -155,8 +153,8 @@ const styles = StyleSheet.create({
           shadowOffset: { width: 10, height: 2 },
           shadowOpacity: 0.2,
           shadowRadius: 4,
-          borderWidth: 0.5,
-          borderColor: '#ECF0F1',
+          borderWidth: 1.5,
+          borderColor: 'black',
      },
      valueItem: {
           alignItems: 'center',
@@ -171,7 +169,7 @@ const styles = StyleSheet.create({
      },
      valueText: {
           fontFamily: 'Roboto-ExtraBold',
-          fontSize: hp('3%'),
+          fontSize: hp('2.2%'),
           color: 'rgba(0,0,0,0.7)',
      },
      valueReps: {
@@ -185,6 +183,7 @@ const styles = StyleSheet.create({
           marginTop: hp('0.5%'),
      },
      speakerIcon: {
+          marginTop: hp(0.2),
           marginLeft: wp('0%'),
      },
 });

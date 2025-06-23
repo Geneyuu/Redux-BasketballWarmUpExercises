@@ -2,6 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createSlice } from '@reduxjs/toolkit';
 import exercises from '../../constants/exercises';
 
+// New async action to reset to default values
+import { Alert } from 'react-native';
+
 const initialState = {
      allExercises: [],
      exerciseOpen: false,
@@ -104,6 +107,7 @@ export const initializeExerciseData = () => async (dispatch) => {
      }
 };
 
+
 // Update exercise by id directly in AsyncStorage, then update Redux state
 export const updateExerciseDataInStorageById = (exerciseId, updatedFields) => async (dispatch) => {
      try {
@@ -123,42 +127,57 @@ export const updateExerciseDataInStorageById = (exerciseId, updatedFields) => as
      }
 };
 
-// New async action to reset to default values
 export const resetToDefault = () => async (dispatch) => {
-     try {
-          const defaultExercises = exercises.map(({ id, name, intensity, description }) => ({
-               id,
-               name,
-               description,
-               intensity: {
-                    beginner: {
-                         duration: intensity.beginner.duration,
-                         repetitions: intensity.beginner.repetitions,
-                         restDuration: intensity.beginner.restDuration,
-                    },
-                    intermediate: {
-                         duration: intensity.intermediate.duration,
-                         repetitions: intensity.intermediate.repetitions,
-                         restDuration: intensity.intermediate.restDuration,
-                    },
-                    advanced: {
-                         duration: intensity.advanced.duration,
-                         repetitions: intensity.advanced.repetitions,
-                         restDuration: intensity.advanced.restDuration,
+     Alert.alert(
+          'Reset to Default',
+          'Are you sure you want to reset all exercises to default values?',
+          [
+               {
+                    text: 'Cancel',
+                    style: 'cancel',
+                    onPress: () => {},
+               },
+               {
+                    text: 'Confirm',
+                    style: 'destructive',
+                    onPress: async () => {
+                         try {
+                              const defaultExercises = exercises.map(({ id, name, intensity, description }) => ({
+                                   id,
+                                   name,
+                                   description,
+                                   intensity: {
+                                        beginner: {
+                                             duration: intensity.beginner.duration,
+                                             repetitions: intensity.beginner.repetitions,
+                                             restDuration: intensity.beginner.restDuration,
+                                        },
+                                        intermediate: {
+                                             duration: intensity.intermediate.duration,
+                                             repetitions: intensity.intermediate.repetitions,
+                                             restDuration: intensity.intermediate.restDuration,
+                                        },
+                                        advanced: {
+                                             duration: intensity.advanced.duration,
+                                             repetitions: intensity.advanced.repetitions,
+                                             restDuration: intensity.advanced.restDuration,
+                                        },
+                                   },
+                              }));
+
+                              await AsyncStorage.setItem('ExerciseDatabase', JSON.stringify(defaultExercises));
+
+                              dispatch(setAllExercises(defaultExercises));
+                              dispatch(resetExercises());
+
+                         } catch (error) {
+                              console.error('Error resetting to default:', error);
+                         }
                     },
                },
-          }));
-
-          await AsyncStorage.setItem('ExerciseDatabase', JSON.stringify(defaultExercises));
-
-          dispatch(setAllExercises(defaultExercises));
-          dispatch(resetExercises());
-
-          return true;
-     } catch (error) {
-          console.error('Error resetting to default:', error);
-          return false;
-     }
+          ]
+     );
 };
+
 
 export default exerciseSlice.reducer;

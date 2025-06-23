@@ -62,7 +62,9 @@ const FirstTimeModal = () => {
 			<View style={styles.overlay}>
 				<View style={styles.modalContainer}>
 					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>Let's Get Started</Text>
+						<Text style={styles.modalTitle}>
+							Let&#39;s Get Started
+						</Text>
 						<Text style={styles.modalText}>
 							Please select your preference for performing the
 							Basketball Warm-Up Exercise:
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
 		borderRadius: 10,
 		overflow: "hidden",
 		backgroundColor: "white",
-		padding: 20,
+		padding: 30,
 		elevation: 10,
 		zIndex: 1000,
 	},

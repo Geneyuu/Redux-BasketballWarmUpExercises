@@ -1,4 +1,5 @@
 import * as Speech from 'expo-speech';
+import { useEffect } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
@@ -14,9 +15,36 @@ const RestScreen = ({ remainingTime, nextExercise, progress, isResting }) => {
           }
      };
 
-     if (isResting) {
-          Speech.stop();
-     }
+     // Stop speech kung nagre-rest
+     useEffect(() => {
+          if (isResting) {
+               Speech.stop();
+          }
+     }, [isResting]);
+
+     // Speak next warmup kapag may bagong nextExercise
+     useEffect(() => {
+          if (nextExercise) {
+               // I-stop muna yung previous speech bago magsalita ulit
+               Speech.stop();
+
+               // Magsalita ng nextExercise name (o description kung meron)
+               Speech.speak(`Take a Rest: Next warm up: ${nextExercise.name}`, {
+                    rate: 0.75,
+                    onDone: () => console.log('Speech finished'),
+                    onStopped: () => console.log('Speech stopped'),
+                    onError: (err) => console.log('Speech error:', err),
+               });
+          } else {
+               Speech.stop();
+               Speech.speak(`All exercises completed! Please finish the rest timer before playing basketball.`);
+          }
+
+          // Cleanup kapag unmount or nextExercise changes
+          return () => {
+               Speech.stop();
+          };
+     }, []);
 
      return (
           <View style={styles.container}>

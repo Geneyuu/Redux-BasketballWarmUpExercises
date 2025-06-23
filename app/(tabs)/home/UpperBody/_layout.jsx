@@ -139,28 +139,28 @@ const Layout = () => {
                                                   style={{
                                                        flexDirection: 'row',
                                                        alignItems: 'center',
-                                                       padding: 5,
+                                                       padding: 10,
                                                        marginTop: hp(2.5),
                                                        zIndex: 10,
                                                   }}
                                              >
-                                                  <Ionicons name="arrow-back" size={hp(4)} color="white" />
+                                                  <Ionicons name="arrow-back" size={hp(3)} color="black" />
                                                   <Text
                                                        style={{
-                                                            color: 'white',
+                                                            color: 'black',
                                                             fontSize: hp(2),
                                                             marginLeft: wp(2),
                                                             fontFamily: 'Roboto-SemiBold',
                                                        }}
                                                   >
-                                                       Back
+                                                       {/* Back */}
                                                   </Text>
                                              </TouchableOpacity>
 
                                              <View style={{ flex: 1, alignItems: 'center' }}>
                                                   <Text
                                                        style={{
-                                                            color: 'white',
+                                                            color: 'black',
                                                             fontSize: hp(2.5),
                                                             fontFamily: 'Roboto-Bold',
                                                        }}

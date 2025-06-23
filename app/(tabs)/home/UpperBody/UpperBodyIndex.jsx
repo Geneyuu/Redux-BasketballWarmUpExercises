@@ -35,36 +35,38 @@ const UpperBodyIndex = () => {
                     <Image source={item.image} style={styles.exerciseImage} />
                     <View style={styles.textContainer}>
                          <Text style={styles.exerciseText}>{item.name}</Text>
-                         <Ionicons name="chevron-forward-outline" size={wp(5.5)} color="#161616" />
+                         <Ionicons name="chevron-forward-outline" size={wp(5.5)} color="gray" />
                     </View>
                </TouchableOpacity>
           </View>
      );
 
+     // Header: static content on top of FlatList
+     const renderHeader = () => (
+          <View style={styles.headerContent}>
+               <Image source={require('../../../../assets/images/inplacepreview.png')} style={styles.mainImage} />
+               <Text style={styles.description}>
+                    Improve your basketball performance with these Upper Body warm-up exercises. Strengthening your
+                    shoulders, chest, and arms helps you shoot, pass, and defend more effectively while reducing the
+                    risk of injury. Get ready to boost your power and mobility on the court!
+               </Text>
+               <Text style={styles.subheading}>Included exercises:</Text>
+          </View>
+     );
+
      return (
           <View style={{ flex: 1, backgroundColor: '#fff' }}>
-               <View style={{ padding: wp(5) }}>
-                    <Image
-                         source={require('../../../../assets/images/wholebodypreview.png')}
-                         style={styles.mainImage}
-                    />
-                    <Text style={styles.description}>
-                         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas et consectetur ante. Vivamus
-                         vulputate nibh eros, vel tempor magna posuere sed.
-                    </Text>
-                    <Text style={styles.subheading}>Included exercises:</Text>
-               </View>
-
                <FlatList
                     data={exercises.slice(10, 15)}
                     keyExtractor={(item) => item.id.toString()}
                     renderItem={renderExerciseItem}
+                    ListHeaderComponent={renderHeader}
+                    ListFooterComponent={<View style={{ height: hp(12) }} />}
                     contentContainerStyle={styles.scrollOnlyExercises}
                     showsVerticalScrollIndicator={true}
-                    initialNumToRender={5}
-                    maxToRenderPerBatch={5}
                />
 
+               {/* Sticky Start Button */}
                <View style={styles.stickyButtonContainer}>
                     <TouchableOpacity style={styles.stickyButton} onPress={handleStartPress}>
                          <Text style={styles.stickyButtonText}>Start Warmups</Text>
@@ -77,7 +79,9 @@ const UpperBodyIndex = () => {
 const styles = StyleSheet.create({
      scrollOnlyExercises: {
           paddingHorizontal: wp(7),
-          paddingBottom: hp(10),
+     },
+     headerContent: {
+          paddingVertical: hp(3),
      },
      mainImage: {
           width: '100%',
@@ -87,8 +91,8 @@ const styles = StyleSheet.create({
           marginBottom: hp(2),
      },
      description: {
-          fontSize: wp(4),
-          lineHeight: hp(3),
+          fontSize: wp(3.5),
+          lineHeight: hp(2),
           color: '#161616',
           marginBottom: hp(2),
           textAlign: 'justify',
@@ -98,6 +102,7 @@ const styles = StyleSheet.create({
           fontSize: wp(5),
           color: '#161616',
           fontFamily: 'Karla-Bold',
+          marginBottom: hp(2),
      },
      cardContainer: {
           width: '100%',
