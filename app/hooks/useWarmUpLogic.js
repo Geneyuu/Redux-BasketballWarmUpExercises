@@ -8,6 +8,7 @@ import {
 	nextExercise,
 	pauseExercise,
 	resetWarmUp,
+	setCurrentCategory,
 	setRemainingTime,
 	setResting,
 	startExercise,
@@ -17,39 +18,51 @@ export const useWarmUpLogic = () => {
 	const { allExercises, intensityValue } = useSelector(
 		(state) => state.exercise
 	);
-	const { isPlaying, isResting, currentExerciseIndex, remainingTime } =
-		useSelector((state) => state.warmUp);
+	const {
+		isPlaying,
+		isResting,
+		currentExerciseIndex,
+		remainingTime,
+		currentCategory,
+	} = useSelector((state) => state.warmUp);
 
 	const dispatch = useDispatch();
 	const router = useRouter();
 	const pathname = usePathname();
 	const videoRef = useRef(null);
 	const isRestingRef = useRef(null);
+	const prevIntensityRef = useRef(intensityValue);
 
 	// Determine exercise slice based on route
 	let sliceStart = 0;
 	let sliceEnd = 0;
+	let detectedCategory = "";
 
 	switch (true) {
 		case pathname.includes("LowerBody"):
 			sliceStart = 5;
 			sliceEnd = 10;
+			detectedCategory = "LowerBody";
 			break;
 		case pathname.includes("UpperBody"):
 			sliceStart = 10;
 			sliceEnd = 15;
+			detectedCategory = "UpperBody";
 			break;
 		case pathname.includes("WholeBody"):
 			sliceStart = 0;
 			sliceEnd = 18;
+			detectedCategory = "WholeBody";
 			break;
 		case pathname.includes("DynamicExercises"):
 			sliceStart = 15;
 			sliceEnd = 18;
+			detectedCategory = "DynamicExercises";
 			break;
 		default:
 			sliceStart = 0;
 			sliceEnd = 18;
+			detectedCategory = "Unknown";
 			break;
 	}
 
@@ -63,10 +76,7 @@ export const useWarmUpLogic = () => {
 			};
 		});
 
-	// console.log(limitedExercises);
-
 	const currentExercise = limitedExercises[currentExerciseIndex];
-
 	const nextExerciseData =
 		currentExerciseIndex < limitedExercises.length - 1
 			? limitedExercises[currentExerciseIndex + 1]
@@ -75,6 +85,34 @@ export const useWarmUpLogic = () => {
 	const intensitySettings =
 		currentExercise?.intensity?.[intensityValue] || {};
 
+	// Reset when intensity changes
+	useEffect(() => {
+		if (prevIntensityRef.current !== intensityValue) {
+			prevIntensityRef.current = intensityValue;
+			// dispatch(resetWarmUp());
+			dispatch(setRemainingTime(intensitySettings.duration?.min));
+			dispatch(setCurrentCategory(detectedCategory));
+			dispatch(pauseExercise());
+		}
+	}, [intensityValue, intensitySettings.duration?.min, detectedCategory]);
+
+	// Handle route changes
+	useEffect(() => {
+		const ignoredRoutes = ["Search", "Profile", "Settings"];
+		const isIgnored = ignoredRoutes.some((route) =>
+			pathname.includes(route)
+		);
+
+		if (isIgnored) return;
+
+		if (currentCategory !== detectedCategory) {
+			dispatch(resetWarmUp());
+			dispatch(setRemainingTime(intensitySettings.duration?.min));
+			dispatch(setCurrentCategory(detectedCategory));
+			dispatch(pauseExercise());
+		}
+	}, [detectedCategory, currentCategory, pathname]);
+
 	const totalDuration = isResting
 		? intensitySettings.restDuration?.min
 		: intensitySettings.duration?.min;
@@ -82,7 +120,7 @@ export const useWarmUpLogic = () => {
 	const progress = 1 - remainingTime / (totalDuration || 1);
 
 	useEffect(() => {
-		if (totalDuration) {
+		if (remainingTime === 0) {
 			dispatch(setRemainingTime(totalDuration));
 		}
 	}, [intensityValue, isResting, currentExerciseIndex]);
@@ -110,6 +148,7 @@ export const useWarmUpLogic = () => {
 								"Great job! You can now Play Basketball!"
 							);
 							dispatch(pauseExercise());
+							dispatch(resetWarmUp());
 							router.replace("/(tabs)/");
 						}
 					}
@@ -135,19 +174,34 @@ export const useWarmUpLogic = () => {
 	const handleRestart = () => {
 		dispatch(pauseExercise());
 		dispatch(setResting(false));
-		dispatch(setRemainingTime(intensitySettings.duration?.min || 0));
+		Alert.alert(
+			"Restart Warm-Up Exercises",
+			"Restart Exercise will reset the exercises from the start, Do you wish to Restart?",
+			[
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+				{
+					text: "Restart",
+					onPress: () => dispatch(resetWarmUp()),
+					style: "destructive",
+				},
+			]
+		);
 	};
 
 	useFocusEffect(
 		React.useCallback(() => {
 			if (!isRestingRef.current) {
 				dispatch(pauseExercise());
+			} else if (currentCategory !== detectedCategory) {
+				dispatch(pauseExercise());
 			} else {
 				dispatch(startExercise());
 			}
 			return () => {
 				dispatch(pauseExercise());
-				// dispatch(resetPlayingResting());
 			};
 		}, [])
 	);
@@ -155,12 +209,6 @@ export const useWarmUpLogic = () => {
 	useEffect(() => {
 		isRestingRef.current = isResting;
 	}, [isResting]);
-
-	useEffect(() => {
-		return () => {
-			dispatch(resetWarmUp());
-		};
-	}, []);
 
 	return {
 		videoRef,
