@@ -9,6 +9,8 @@ const ProgressBar = ({ progress, remainingTime }) => {
 		else return "#2ecc71";
 	};
 
+	console.log(remainingTime);
+
 	return (
 		<View style={styles.progressbarContainer}>
 			<Progress.Bar
