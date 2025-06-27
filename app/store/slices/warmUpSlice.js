@@ -39,7 +39,6 @@ const warmUpSlice = createSlice({
 			state.isResting = false;
 			state.remainingTime = 0;
 		},
-
 		setCurrentCategory: (state, action) => {
 			state.currentCategory = action.payload;
 		},

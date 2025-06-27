@@ -90,7 +90,7 @@ export const useWarmUpLogic = () => {
 	useEffect(() => {
 		if (prevIntensityRef.current !== intensityValue) {
 			prevIntensityRef.current = intensityValue;
-			// dispatch(resetWarmUp());
+			dispatch(resetWarmUp());
 			dispatch(setRemainingTime(intensitySettings.duration?.min));
 			dispatch(setCurrentCategory(detectedCategory));
 			dispatch(pauseExercise());
@@ -155,7 +155,7 @@ export const useWarmUpLogic = () => {
 							router.replace("/(tabs)/");
 						}
 					}
-				}, 300);
+				}, 1000);
 			} else {
 				dispatch(setRemainingTime(remainingTime - 1));
 			}
