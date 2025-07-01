@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
 	},
 	videoContainer: {
 		width: wp(90),
-		height: hp(45),
+		height: hp(50),
 		alignSelf: "center",
 		justifyContent: "center",
 		alignItems: "center",

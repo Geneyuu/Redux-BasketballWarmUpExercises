@@ -146,28 +146,35 @@ export const useWarmUpLogic = () => {
 						) {
 							dispatch(nextExercise());
 						} else {
-							const finishWorkout = async () => {
-								try {
-									await AsyncStorage.setItem(
-										"lastCategory",
-										""
-									);
-								} catch (error) {
-									console.error(
-										"Error saving lastCategory:",
-										error
-									);
-								}
-								Alert.alert(
-									"Workout Complete!",
-									"Great job! You can now Play Basketball!"
-								);
-								dispatch(pauseExercise());
-								dispatch(resetWarmUp());
-								router.replace("/(tabs)/");
-							};
+							// const finishWorkout = async () => {
+							// 	try {
+							// 		await AsyncStorage.setItem(
+							// 			"lastCategory",
+							// 			""
+							// 		);
+							// 	} catch (error) {
+							// 		console.error(
+							// 			"Error saving lastCategory:",
+							// 			error
+							// 		);
+							// 	}
+							// 	Alert.alert(
+							// 		"Workout Complete!",
+							// 		"Great job! You can now Play Basketball!"
+							// 	);
+							// 	dispatch(pauseExercise());
+							// 	dispatch(resetWarmUp());
+							// 	router.replace("/(tabs)/");
+							// };
+							Alert.alert(
+								"Workout Complete!",
+								"Great job! You can now Play Basketball!"
+							);
+							dispatch(pauseExercise());
+							dispatch(resetWarmUp());
+							router.replace("/(tabs)/");
 
-							finishWorkout();
+							// finishWorkout();
 						}
 					}
 				}, 1000);

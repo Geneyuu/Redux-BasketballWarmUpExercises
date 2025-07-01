@@ -1,5 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import * as Speech from "expo-speech";
+import { useEffect } from "react";
+import {
+	AppState,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import {
 	heightPercentageToDP as hp,
 	widthPercentageToDP as wp,
@@ -12,25 +20,45 @@ const Controls = ({
 	currentExercise,
 	setIsSpeaking,
 }) => {
-	// useEffect(() => {
-	//      if (isPlaying) {
-	//           setIsSpeaking(true);
+	// Auto pause on background
+	useEffect(() => {
+		const subscription = AppState.addEventListener(
+			"change",
+			(nextAppState) => {
+				if (
+					nextAppState === "background" ||
+					nextAppState === "inactive"
+				) {
+					Speech.stop();
+					setIsSpeaking(false);
+					if (isPlaying) togglePlayPause();
+				}
+			}
+		);
 
-	//           Speech.speak(currentExercise.description, {
-	//                onDone: () => setIsSpeaking(false),
-	//                onStopped: () => setIsSpeaking(false),
-	//                onError: () => setIsSpeaking(false),
-	//           });
-	//      } else {
-	//           Speech.stop();
-	//           setIsSpeaking(false);
-	//      }
+		return () => subscription.remove();
+	}, [isPlaying, togglePlayPause, setIsSpeaking]);
 
-	//      return () => {
-	//           Speech.stop();
-	//           setIsSpeaking(false);
-	//      };
-	// }, [isPlaying, currentExercise.description, setIsSpeaking]);
+	useEffect(() => {
+		if (isPlaying) {
+			setIsSpeaking(true);
+
+			Speech.speak(currentExercise.description, {
+				rate: 1.2,
+				onDone: () => setIsSpeaking(false),
+				onStopped: () => setIsSpeaking(false),
+				onError: () => setIsSpeaking(false),
+			});
+		} else {
+			Speech.stop();
+			setIsSpeaking(false);
+		}
+
+		return () => {
+			Speech.stop();
+			setIsSpeaking(false);
+		};
+	}, [isPlaying, currentExercise.description, setIsSpeaking]);
 
 	return (
 		<View style={styles.buttonContainer}>

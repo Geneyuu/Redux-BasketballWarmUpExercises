@@ -34,6 +34,7 @@ const StartWarmUps = () => {
 					nextExercise={nextExercise}
 					progress={progress}
 					isResting={isResting}
+					isPlaying={isPlaying}
 				/>
 			) : (
 				<>
@@ -65,6 +66,8 @@ const StartWarmUps = () => {
 					<ProgressBar
 						progress={progress}
 						remainingTime={remainingTime}
+						isPlaying={isPlaying}
+						isResting={isResting}
 					/>
 				</>
 			)}

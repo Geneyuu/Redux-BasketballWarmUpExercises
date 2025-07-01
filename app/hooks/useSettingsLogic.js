@@ -74,17 +74,25 @@ const useSettingsLogic = () => {
 	// Validation
 	const isInvalid = {
 		duration: duration
-			? parseInt(duration) < originalIntensitySettings?.duration?.min ||
+			? isNaN(parseInt(duration)) ||
+			  /[-.,\s]/.test(duration) ||
+			  parseInt(duration) < originalIntensitySettings?.duration?.min ||
 			  parseInt(duration) > originalIntensitySettings?.duration?.max
 			: false,
+
 		repetitions: repetitions
-			? parseInt(repetitions) <
+			? isNaN(parseInt(repetitions)) ||
+			  /[-.,\s]/.test(repetitions) ||
+			  parseInt(repetitions) <
 					originalIntensitySettings?.repetitions?.min ||
 			  parseInt(repetitions) >
 					originalIntensitySettings?.repetitions?.max
 			: false,
+
 		restDuration: restDuration
-			? parseInt(restDuration) <
+			? isNaN(parseInt(restDuration)) ||
+			  /[-.,\s]/.test(restDuration) ||
+			  parseInt(restDuration) <
 					originalIntensitySettings?.restDuration?.min ||
 			  parseInt(restDuration) >
 					originalIntensitySettings?.restDuration?.max

@@ -1,11 +1,75 @@
+import * as Speech from "expo-speech";
+import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import * as Progress from "react-native-progress";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import useSounds from "../../../../hooks/useSounds";
 
-const ProgressBar = ({ progress, remainingTime }) => {
+const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
+	const lastSpoken = useRef(null); // To track countdown numbers
+	const hasSpokenTimesUp = useRef(false); // To avoid repeat "Time's up!"
+	const { tickSound, soundsLoaded } = useSounds();
+
+	//  Tick Sound (play looped tick when playing)
+	useEffect(() => {
+		if (!soundsLoaded || !tickSound) return;
+
+		if (isPlaying) {
+			tickSound.setIsLoopingAsync(true);
+			tickSound.playAsync();
+		}
+
+		return () => {
+			if (tickSound) {
+				tickSound.stopAsync();
+			}
+		};
+	}, [isPlaying, isResting, tickSound, soundsLoaded]);
+
+	// Countdown Speech
+	useEffect(() => {
+		if (
+			isPlaying &&
+			remainingTime <= 10 &&
+			remainingTime >= 1 &&
+			lastSpoken.current !== remainingTime
+		) {
+			Speech.speak(remainingTime.toString(), { rate: 1.2 });
+			lastSpoken.current = remainingTime;
+		}
+
+		if (!isPlaying || remainingTime > 10) {
+			lastSpoken.current = null;
+		}
+	}, [remainingTime, isPlaying]);
+
+	// 🗣️ Time's Up Speech
+	useEffect(() => {
+		const interval = setInterval(async () => {
+			if (isPlaying && remainingTime === 0 && !hasSpokenTimesUp.current) {
+				if (tickSound) {
+					await tickSound.stopAsync();
+				}
+
+				Speech.speak("Time's up!", {
+					rate: 1,
+					queue: true,
+				});
+				hasSpokenTimesUp.current = true;
+			}
+
+			if (remainingTime > 0) {
+				hasSpokenTimesUp.current = false;
+			}
+		}, 400);
+
+		return () => clearInterval(interval);
+	}, [remainingTime, isPlaying, tickSound]);
+
+	// Tint color logic
 	const getTintColor = () => {
 		if (progress >= 0.7) return "#e74c3c";
-		else if (progress >= 0.4) return "#f1c40f";
+		else if (progress >= 0.4) return "#fad542";
 		else return "#2ecc71";
 	};
 

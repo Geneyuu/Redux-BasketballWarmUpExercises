@@ -1,18 +1,18 @@
 import * as Speech from "expo-speech";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Dimensions, Image, StyleSheet, Text, View } from "react-native";
 import { AnimatedCircularProgress } from "react-native-circular-progress";
 import {
 	heightPercentageToDP as hp,
 	widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
+import useSounds from "../../../../hooks/useSounds";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const isSmallPhone = SCREEN_WIDTH < 360;
 const isMidPhone = SCREEN_WIDTH >= 360 && SCREEN_WIDTH < 768;
 const isTablet = SCREEN_WIDTH >= 768;
 
-// Dynamic responsivenes omayyyy
 let restFontSize,
 	timerFontSize,
 	timerSecFont,
@@ -47,27 +47,94 @@ if (isSmallPhone) {
 	imageSize = { width: wp("40%"), height: hp("16%") };
 }
 
-const RestScreen = ({ remainingTime, nextExercise, progress, isResting }) => {
-	const getTintColor = () => {
-		if (progress >= 0.7) return "#e74c3c";
-		else if (progress >= 0.4) return "#f1c40f";
-		else return "#2ecc71";
-	};
+const RestScreen = ({
+	remainingTime,
+	nextExercise,
+	progress,
+	isResting,
+	isPlaying,
+}) => {
+	const { tickSound, soundsLoaded } = useSounds();
+	const lastSpoken = useRef(null); // To track countdown numbers
+	const hasSpokenTimesUp = useRef(false); // To avoid repeat "Time's up!"
 
+	//  Start/stop ticking sound based on state
 	useEffect(() => {
-		if (isResting) {
-			Speech.stop();
-		}
-	}, [isResting]);
+		if (!tickSound || !soundsLoaded) return;
 
+		const handleTickSound = async () => {
+			const status = await tickSound.getStatusAsync();
+
+			if (isResting && isPlaying && status.isLoaded) {
+				await tickSound.setIsLoopingAsync(true);
+				await tickSound.playAsync();
+			} else if (status.isLoaded) {
+				await tickSound.stopAsync();
+			}
+		};
+
+		handleTickSound();
+
+		return () => {
+			tickSound.stopAsync();
+		};
+	}, [isResting, isPlaying, tickSound, soundsLoaded]);
+
+	// Stop ticking sound IMMEDIATELY when time runs out
+	useEffect(() => {
+		const handleTickAndSpeak = async () => {
+			if (remainingTime === 0 && tickSound) {
+				const status = await tickSound.getStatusAsync();
+				if (status.isLoaded) {
+					await tickSound.stopAsync();
+				}
+
+				//  Speak "Time's up!" once
+				if (!hasSpokenTimesUp.current) {
+					Speech.speak("Time's up!", { rate: 1.2 });
+					hasSpokenTimesUp.current = true;
+				}
+			}
+
+			// Reset flag when time is > 0
+			if (remainingTime > 0) {
+				hasSpokenTimesUp.current = false;
+			}
+		};
+
+		handleTickAndSpeak();
+	}, [remainingTime, tickSound]);
+
+	//  Countdown Speech
+	useEffect(() => {
+		const speakCountdown = async () => {
+			const isSpeaking = await Speech.isSpeakingAsync();
+
+			if (
+				isPlaying &&
+				remainingTime <= 10 &&
+				remainingTime >= 1 &&
+				lastSpoken.current !== remainingTime &&
+				!isSpeaking
+			) {
+				Speech.speak(remainingTime.toString(), { rate: 1.2 });
+				lastSpoken.current = remainingTime;
+			}
+
+			if (!isPlaying || remainingTime > 10) {
+				lastSpoken.current = null;
+			}
+		};
+
+		speakCountdown();
+	}, [remainingTime, isPlaying]);
+
+	//  What’s next announcement
 	useEffect(() => {
 		if (nextExercise) {
 			Speech.stop();
 			Speech.speak(`Take a Rest: Next warm up: ${nextExercise.name}`, {
-				rate: 0.75,
-				onDone: () => console.log("Speech finished"),
-				onStopped: () => console.log("Speech stopped"),
-				onError: (err) => console.log("Speech error:", err),
+				rate: 1.2,
 			});
 		} else {
 			Speech.stop();
@@ -80,6 +147,13 @@ const RestScreen = ({ remainingTime, nextExercise, progress, isResting }) => {
 			Speech.stop();
 		};
 	}, []);
+
+	//  Tint Color
+	const getTintColor = () => {
+		if (progress >= 0.7) return "#e74c3c";
+		else if (progress >= 0.4) return "#f1c40f";
+		else return "#2ecc71";
+	};
 
 	return (
 		<View style={styles.container}>
@@ -99,13 +173,7 @@ const RestScreen = ({ remainingTime, nextExercise, progress, isResting }) => {
 			>
 				{() => (
 					<Text
-						style={[
-							styles.timerText,
-							{
-								fontSize: timerFontSize,
-								marginLeft: isSmallPhone ? 10 : 25,
-							},
-						]}
+						style={[styles.timerText, { fontSize: timerFontSize }]}
 					>
 						{remainingTime}
 						<Text
