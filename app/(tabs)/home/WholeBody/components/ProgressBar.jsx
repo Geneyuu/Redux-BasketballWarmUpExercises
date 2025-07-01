@@ -1,47 +1,32 @@
-import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import * as Progress from "react-native-progress";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
+import useSounds from "../../../../hooks/useSounds";
 
 const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
-	const soundRef = useRef(null);
 	const lastSpoken = useRef(null); // To track countdown numbers
 	const hasSpokenTimesUp = useRef(false); // To avoid repeat "Time's up!"
+	const { tickSound, soundsLoaded } = useSounds();
 
-	//  Tick Sound
+	//  Tick Sound (play looped tick when playing)
 	useEffect(() => {
-		const playTick = async () => {
-			if (soundRef.current) {
-				await soundRef.current.unloadAsync();
-				soundRef.current = null;
-			}
-
-			const { sound } = await Audio.Sound.createAsync(
-				require("./../../../../../assets/sounds/ticking-sound-v3.mp3"),
-				{
-					shouldPlay: true,
-					isLooping: true,
-				}
-			);
-			soundRef.current = sound;
-			await sound.playAsync();
-		};
+		if (!soundsLoaded || !tickSound) return;
 
 		if (isPlaying) {
-			playTick();
+			tickSound.setIsLoopingAsync(true);
+			tickSound.playAsync();
 		}
 
 		return () => {
-			if (soundRef.current) {
-				soundRef.current.unloadAsync();
-				soundRef.current = null;
+			if (tickSound) {
+				tickSound.stopAsync();
 			}
 		};
-	}, [isPlaying, isResting]);
+	}, [isPlaying, isResting, tickSound, soundsLoaded]);
 
-	//  Countdown Speech
+	// Countdown Speech
 	useEffect(() => {
 		if (
 			isPlaying &&
@@ -58,17 +43,14 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 		}
 	}, [remainingTime, isPlaying]);
 
-	//  Time's Up Speech using 600ms interval
+	// 🗣️ Time's Up Speech
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			if (isPlaying && remainingTime === 0 && !hasSpokenTimesUp.current) {
-				//  Stop ticking sound if it's still playing
-				if (soundRef.current) {
-					await soundRef.current.pauseAsync();
-					soundRef.current = null;
+				if (tickSound) {
+					await tickSound.stopAsync();
 				}
 
-				//  Speak "Time's up!"
 				Speech.speak("Time's up!", {
 					rate: 1,
 					queue: true,
@@ -76,15 +58,13 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 				hasSpokenTimesUp.current = true;
 			}
 
-			//  Reset kapag nagstart ulit
 			if (remainingTime > 0) {
 				hasSpokenTimesUp.current = false;
 			}
 		}, 400);
 
-		//  Clear interval on unmount
 		return () => clearInterval(interval);
-	}, [remainingTime, isPlaying]);
+	}, [remainingTime, isPlaying, tickSound]);
 
 	// Tint color logic
 	const getTintColor = () => {

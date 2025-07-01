@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch } from "react-redux";
 import useCheckOnboardingStatus from "./hooks/useCheckOnBoardingStatus";
 import useLoadFonts from "./hooks/useLoadFonts";
+import useSounds from "./hooks/useSounds";
 import { initializeExerciseData } from "./store/thunks/exerciseThunks";
 import { fetchName } from "./store/thunks/profileThunks";
 
@@ -28,6 +29,7 @@ export default function Index() {
 	const dispatch = useDispatch();
 
 	useLoadFonts();
+	useSounds();
 	useCheckOnboardingStatus();
 
 	const scale = useRef(new Animated.Value(1)).current;

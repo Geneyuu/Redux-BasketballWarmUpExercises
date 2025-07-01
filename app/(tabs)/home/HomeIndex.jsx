@@ -33,6 +33,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch } from "react-redux";
+import { resetWarmUp } from "../../store/slices/warmUpSlice";
 import Categories from "./components/Categories";
 import FeaturedExercises from "./components/FeaturedExercises";
 import FirstTimeModal from "./components/FirstTimeModal";
@@ -43,7 +45,7 @@ const HomeIndex = () => {
 	const [showContinue, setShowContinue] = useState(false);
 	const prevCategoryRef = useRef(null);
 	const router = useRouter();
-
+	const dispatch = useDispatch();
 	useFocusEffect(
 		useCallback(() => {
 			const loadLastCategory = async () => {
@@ -69,8 +71,11 @@ const HomeIndex = () => {
 		}
 	};
 
-	const handleClose = () => {
+	const handleClose = async () => {
 		setShowContinue(false);
+		setLastCategory(null);
+		await AsyncStorage.setItem("lastCategory", "");
+		dispatch(resetWarmUp());
 	};
 
 	return (
@@ -91,12 +96,12 @@ const HomeIndex = () => {
 						onPress={handleClose}
 						activeOpacity={0.9}
 					>
-						<Ionicons name="close" size={23} color="red" />
+						<Ionicons name="close" size={12} color="red" />
 					</TouchableOpacity>
 
 					<View style={styles.rowCenter}>
 						<Text style={styles.floatingText}>
-							Tap to continue progress {lastCategory}?
+							Tap to continue progress on {lastCategory}?
 						</Text>
 					</View>
 				</TouchableOpacity>
@@ -112,21 +117,22 @@ const styles = StyleSheet.create({
 	},
 	floatingContinue: {
 		position: "absolute",
-		bottom: 0,
+		top: 435,
 		right: 0,
 		backgroundColor: "black",
-		paddingVertical: 11,
-		paddingHorizontal: 30,
+		paddingVertical: 5,
+		paddingLeft: 25,
+		paddingRight: 6,
 		borderTopLeftRadius: 10,
-		borderTopRightRadius: 10,
+		borderBottomStartRadius: 10,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 	closeButton: {
 		position: "absolute",
-		top: -10,
-		right: 0,
-		backgroundColor: "black",
+		left: 1,
+		top: 1,
+		backgroundColor: "white",
 		borderRadius: 20,
 		padding: 4,
 		zIndex: 1,
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
 	},
 	floatingText: {
 		color: "white",
-		fontSize: 12,
+		fontSize: 11,
 		fontFamily: "Karla-Bold",
 	},
 });

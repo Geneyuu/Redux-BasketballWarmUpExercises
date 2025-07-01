@@ -34,6 +34,7 @@ const StartWarmUps = () => {
 					nextExercise={nextExercise}
 					progress={progress}
 					isResting={isResting}
+					isPlaying={isPlaying}
 				/>
 			) : (
 				<>
