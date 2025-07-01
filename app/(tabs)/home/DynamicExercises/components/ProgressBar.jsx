@@ -6,11 +6,11 @@ import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import useSounds from "../../../../hooks/useSounds";
 
 const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
-	const lastSpoken = useRef(null); // To track countdown numbers
-	const hasSpokenTimesUp = useRef(false); // To avoid repeat "Time's up!"
+	const lastSpoken = useRef(null); // Countdown 10-1
+	const hasSpokenTimesUp = useRef(false); // Time’s Up checker
 	const { tickSound, soundsLoaded } = useSounds();
 
-	//  Tick Sound (play looped tick when playing)
+	//  Tick Sound
 	useEffect(() => {
 		if (!soundsLoaded || !tickSound) return;
 
@@ -26,24 +26,31 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 		};
 	}, [isPlaying, isResting, tickSound, soundsLoaded]);
 
-	// Countdown Speech
+	// 🗣️ Countdown Speech (10s to 1s)
 	useEffect(() => {
-		if (
-			isPlaying &&
-			remainingTime <= 10 &&
-			remainingTime >= 1 &&
-			lastSpoken.current !== remainingTime
-		) {
-			Speech.speak(remainingTime.toString(), { rate: 1.2 });
-			lastSpoken.current = remainingTime;
-		}
+		const speakCountdown = async () => {
+			const isSpeaking = await Speech.isSpeakingAsync();
 
-		if (!isPlaying || remainingTime > 10) {
-			lastSpoken.current = null;
-		}
+			if (
+				isPlaying &&
+				remainingTime <= 10 &&
+				remainingTime >= 1 &&
+				lastSpoken.current !== remainingTime &&
+				!isSpeaking
+			) {
+				Speech.speak(remainingTime.toString(), { rate: 1.2 });
+				lastSpoken.current = remainingTime;
+			}
+
+			if (!isPlaying || remainingTime > 10) {
+				lastSpoken.current = null;
+			}
+		};
+
+		speakCountdown();
 	}, [remainingTime, isPlaying]);
 
-	// 🗣️ Time's Up Speech
+	// ⏰ Time's Up Speech
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			if (isPlaying && remainingTime === 0 && !hasSpokenTimesUp.current) {
@@ -66,7 +73,7 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 		return () => clearInterval(interval);
 	}, [remainingTime, isPlaying, tickSound]);
 
-	// Tint color logic
+	// 🎨 Tint Color based on progress
 	const getTintColor = () => {
 		if (progress >= 0.7) return "#e74c3c";
 		else if (progress >= 0.4) return "#fad542";

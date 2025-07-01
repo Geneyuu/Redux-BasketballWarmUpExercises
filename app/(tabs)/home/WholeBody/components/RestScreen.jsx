@@ -106,7 +106,6 @@ const RestScreen = ({
 	}, [remainingTime, tickSound]);
 
 	// 🔟 Countdown Speech
-	// 🔟 Countdown Speech
 	useEffect(() => {
 		const speakCountdown = async () => {
 			const isSpeaking = await Speech.isSpeakingAsync();

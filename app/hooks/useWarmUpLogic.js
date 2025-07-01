@@ -93,7 +93,7 @@ export const useWarmUpLogic = () => {
 			dispatch(resetWarmUp());
 			dispatch(setRemainingTime(intensitySettings.duration?.min));
 			dispatch(setCurrentCategory(detectedCategory));
-			dispatch(pauseExercise());
+			// dispatch(pauseExercise());
 		}
 	}, [intensityValue, intensitySettings.duration?.min, detectedCategory]);
 
@@ -110,8 +110,7 @@ export const useWarmUpLogic = () => {
 			dispatch(resetWarmUp());
 			dispatch(setRemainingTime(intensitySettings.duration?.min));
 			dispatch(setCurrentCategory(detectedCategory));
-			dispatch(pauseExercise());
-
+			// dispatch(pauseExercise());
 			AsyncStorage.setItem("lastCategory", detectedCategory);
 		}
 	}, [detectedCategory, currentCategory, pathname]);
@@ -216,24 +215,28 @@ export const useWarmUpLogic = () => {
 		);
 	};
 
-	useFocusEffect(
-		React.useCallback(() => {
-			if (!isRestingRef.current) {
-				dispatch(pauseExercise());
-			} else if (currentCategory !== detectedCategory) {
-				dispatch(pauseExercise());
-			} else {
-				dispatch(startExercise());
-			}
-			return () => {
-				dispatch(pauseExercise());
-			};
-		}, [])
-	);
-
 	useEffect(() => {
 		isRestingRef.current = isResting;
 	}, [isResting]);
+
+	useFocusEffect(
+		React.useCallback(() => {
+			// Always pause when screen is re-entered
+			dispatch(pauseExercise());
+
+			const shouldAutoPlay =
+				isRestingRef.current && currentCategory === detectedCategory;
+
+			if (shouldAutoPlay) {
+				dispatch(startExercise());
+			}
+
+			return () => {
+				// Always pause when navigating away
+				dispatch(pauseExercise());
+			};
+		}, [currentCategory, detectedCategory])
+	);
 
 	// // Load saved progress on mount
 
