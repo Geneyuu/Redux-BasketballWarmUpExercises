@@ -6,11 +6,11 @@ import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import useSounds from "../../../../hooks/useSounds";
 
 const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
-	const lastSpoken = useRef(null); // Countdown 10-1
-	const hasSpokenTimesUp = useRef(false); // Time’s Up checker
+	const lastSpoken = useRef(null);
+	const hasSpokenTimesUp = useRef(false);
 	const { tickSound, soundsLoaded } = useSounds();
 
-	// 🎵 Tick Sound
+	//  Tick Sound
 	useEffect(() => {
 		if (!soundsLoaded || !tickSound) return;
 
@@ -26,7 +26,7 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 		};
 	}, [isPlaying, isResting, tickSound, soundsLoaded]);
 
-	// 🗣️ Countdown Speech (10s to 1s)
+	//  Countdown Speech (10s to 1s)
 	useEffect(() => {
 		const speakCountdown = async () => {
 			const isSpeaking = await Speech.isSpeakingAsync();
@@ -50,7 +50,7 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 		speakCountdown();
 	}, [remainingTime, isPlaying]);
 
-	// ⏰ Time's Up Speech
+	//  Time's Up Speech
 	useEffect(() => {
 		const interval = setInterval(async () => {
 			if (isPlaying && remainingTime === 0 && !hasSpokenTimesUp.current) {
@@ -85,7 +85,7 @@ const ProgressBar = ({ progress, remainingTime, isPlaying, isResting }) => {
 			<Progress.Bar
 				progress={progress}
 				width={null}
-				height={hp("5%")}
+				height={hp("6.5%")}
 				color={getTintColor()}
 				unfilledColor="#ECF0F1"
 				borderRadius={0}

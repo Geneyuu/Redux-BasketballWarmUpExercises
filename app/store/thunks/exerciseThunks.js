@@ -44,8 +44,37 @@ export const initializeExerciseData = () => async (dispatch) => {
 };
 
 // Update exercise data in AsyncStorage
-export const updateExerciseDataInStorageById =
-	(exerciseId, updatedFields) => async (dispatch) => {
+// export const updateExerciseDataInStorageById =
+// 	(exerciseId, updatedFields) => async (dispatch) => {
+// 		try {
+// 			const storedExercises = await AsyncStorage.getItem(
+// 				"ExerciseDatabase"
+// 			);
+// 			if (!storedExercises) return;
+
+// 			const exercisesArray = JSON.parse(storedExercises);
+// 			const updatedExercises = exercisesArray.map((exercise) =>
+// 				exercise.id === exerciseId
+// 					? { ...exercise, ...updatedFields }
+// 					: exercise
+// 			);
+
+// 			await AsyncStorage.setItem(
+// 				"ExerciseDatabase",
+// 				JSON.stringify(updatedExercises)
+// 			);
+// 			dispatch(setAllExercises(updatedExercises));
+// 		} catch (error) {
+// 			console.error("Update Error:", error);
+// 		}
+// 	};
+
+// Update exercise data in AsyncStorage
+export async function updateExerciseDataInStorageById(
+	exerciseId,
+	updatedFields
+) {
+	return async function (dispatch) {
 		try {
 			const storedExercises = await AsyncStorage.getItem(
 				"ExerciseDatabase"
@@ -68,6 +97,7 @@ export const updateExerciseDataInStorageById =
 			console.error("Update Error:", error);
 		}
 	};
+}
 
 // Reset to default exercises
 export const resetToDefault = () => async (dispatch) => {
