@@ -6,7 +6,6 @@ import {
 	widthPercentageToDP as wp,
 } from "react-native-responsive-screen";
 
-//Check if tablet
 const isTablet = wp("100%") >= 600;
 
 const TabIcon = ({ icon, focused, color }) => (

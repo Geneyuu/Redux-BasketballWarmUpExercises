@@ -231,7 +231,6 @@ const useSettingsLogic = () => {
 		isInvalid,
 		intensityBgColor,
 
-		// All handlers remain exactly the same
 		handleExerciseOpen: (open) => dispatch(setExerciseOpen(open)),
 		handleExerciseValue: (callback) =>
 			dispatch(setExerciseValue(callback(exerciseValue))),
