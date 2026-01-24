@@ -1,8 +1,8 @@
-import { useEffect, useMemo } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useEffect } from "react";
 import { Alert } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
-	resetToDefault,
 	setDuration,
 	setExerciseData,
 	setExerciseOpen,
@@ -11,9 +11,12 @@ import {
 	setIntensityValue,
 	setRepetitions,
 	setRestDuration,
-	updateExerciseDataInStorageById,
 } from "../../app/store/slices/exerciseSlice";
 import { exercises } from "../constants/exercises";
+import {
+	resetToDefault,
+	updateExerciseDataInStorageById,
+} from "../store/thunks/exerciseThunks";
 
 const INTENSITY_BG_COLOR = {
 	beginner: "#d0f5e7",
@@ -32,113 +35,85 @@ const useSettingsLogic = () => {
 		exerciseData: { duration, repetitions, restDuration },
 	} = useSelector((state) => state.exercise);
 
-	const originalExercise = useMemo(
-		() => exercises.find((ex) => ex.id === exerciseValue),
-		[exerciseValue]
-	);
+	// Dropdown items
+	const exerciseItems = [
+		{ label: "Select an Exercise...", value: null },
+		...allExercises.map((exercise) => ({
+			label: exercise.name,
+			value: exercise.id,
+		})),
+	];
 
-	const selectedExercise = useMemo(
-		() => allExercises.find((ex) => ex.id === exerciseValue),
-		[allExercises, exerciseValue]
-	);
+	const intensityItems = [
+		{ label: "Beginner", value: "beginner" },
+		{ label: "Intermediate", value: "intermediate" },
+		{ label: "Advanced", value: "advanced" },
+	];
 
-	const exerciseItems = useMemo(
-		() => [
-			{ label: "Select an Exercise...", value: null },
-			...allExercises.map((exercise) => ({
-				label: exercise.name,
-				value: exercise.id,
-			})),
-		],
-		[allExercises]
-	);
+	// Exercise data
+	const originalExercise = exercises.find((ex) => ex.id === exerciseValue);
+	const selectedExercise = allExercises.find((ex) => ex.id === exerciseValue);
+	const currentIntensitySettings =
+		selectedExercise?.intensity?.[intensityValue] || {};
+	const originalIntensitySettings =
+		originalExercise?.intensity?.[intensityValue] || {};
 
-	const intensityItems = useMemo(
-		() => [
-			{ label: "Beginner", value: "beginner" },
-			{ label: "Intermediate", value: "intermediate" },
-			{ label: "Advanced", value: "advanced" },
-		],
-		[]
-	);
+	// Recommended ranges
+	const recommendedRange = {
+		duration: `${originalIntensitySettings?.duration?.min || 0} - ${
+			originalIntensitySettings?.duration?.max || 0
+		} seconds`,
+		repetitions: `${originalIntensitySettings?.repetitions?.min || 0} - ${
+			originalIntensitySettings?.repetitions?.max || 0
+		} reps`,
+		restDuration: `${originalIntensitySettings?.restDuration?.min || 0} - ${
+			originalIntensitySettings?.restDuration?.max || 0
+		} seconds`,
+	};
 
-	const originalIntensitySettings = useMemo(() => {
-		return originalExercise?.intensity?.[intensityValue] || {};
-	}, [originalExercise, intensityValue]);
+	// Validation
+	const isInvalid = {
+		duration: duration
+			? isNaN(parseInt(duration)) ||
+			  /[-.,\s]/.test(duration) ||
+			  parseInt(duration) < originalIntensitySettings?.duration?.min ||
+			  parseInt(duration) > originalIntensitySettings?.duration?.max
+			: false,
 
-	const currentIntensitySettings = useMemo(() => {
-		return selectedExercise?.intensity?.[intensityValue] || {};
-	}, [selectedExercise, intensityValue]);
+		repetitions: repetitions
+			? isNaN(parseInt(repetitions)) ||
+			  /[-.,\s]/.test(repetitions) ||
+			  parseInt(repetitions) <
+					originalIntensitySettings?.repetitions?.min ||
+			  parseInt(repetitions) >
+					originalIntensitySettings?.repetitions?.max
+			: false,
 
-	const recommendedRange = useMemo(
-		() => ({
-			duration: `${originalIntensitySettings?.duration?.min || 0} - ${
-				originalIntensitySettings?.duration?.max || 0
-			} seconds`,
-			repetitions: `${
-				originalIntensitySettings?.repetitions?.min || 0
-			} - ${originalIntensitySettings?.repetitions?.max || 0} reps`,
-			restDuration: `${
-				originalIntensitySettings?.restDuration?.min || 0
-			} - ${originalIntensitySettings?.restDuration?.max || 0} seconds`,
-		}),
-		[originalIntensitySettings]
-	);
+		restDuration: restDuration
+			? isNaN(parseInt(restDuration)) ||
+			  /[-.,\s]/.test(restDuration) ||
+			  parseInt(restDuration) <
+					originalIntensitySettings?.restDuration?.min ||
+			  parseInt(restDuration) >
+					originalIntensitySettings?.restDuration?.max
+			: false,
+	};
 
-	const isInvalid = useMemo(
-		() => ({
-			duration: duration
-				? parseInt(duration) <
-						originalIntensitySettings?.duration?.min ||
-				  parseInt(duration) > originalIntensitySettings?.duration?.max
-				: false,
-			repetitions: repetitions
-				? parseInt(repetitions) <
-						originalIntensitySettings?.repetitions?.min ||
-				  parseInt(repetitions) >
-						originalIntensitySettings?.repetitions?.max
-				: false,
-			restDuration: restDuration
-				? parseInt(restDuration) <
-						originalIntensitySettings?.restDuration?.min ||
-				  parseInt(restDuration) >
-						originalIntensitySettings?.restDuration?.max
-				: false,
-		}),
-		[duration, repetitions, restDuration, originalIntensitySettings]
-	);
+	const intensityBgColor = INTENSITY_BG_COLOR[intensityValue] || "white";
 
-	const intensityBgColor = useMemo(
-		() => INTENSITY_BG_COLOR[intensityValue] || "white",
-		[intensityValue]
-	);
-
+	// Reset form when exercise or intensity changes
 	useEffect(() => {
-		if (selectedExercise && intensityValue) {
-			dispatch(
-				setExerciseData({
-					duration:
-						currentIntensitySettings?.duration?.min?.toString() ||
-						"",
-					repetitions:
-						currentIntensitySettings?.repetitions?.min?.toString() ||
-						"",
-					restDuration:
-						currentIntensitySettings?.restDuration?.min?.toString() ||
-						"",
-				})
-			);
-		} else {
-			dispatch(
-				setExerciseData({
-					duration: "",
-					repetitions: "",
-					restDuration: "",
-				})
-			);
-		}
-	}, [selectedExercise, currentIntensitySettings, intensityValue, dispatch]);
+		const settings = selectedExercise?.intensity?.[intensityValue] || {};
+		dispatch(
+			setExerciseData({
+				duration: settings?.duration?.min?.toString() || "",
+				repetitions: settings?.repetitions?.min?.toString() || "",
+				restDuration: settings?.restDuration?.min?.toString() || "",
+			})
+		);
+	}, [selectedExercise, intensityValue, dispatch]);
 
+	// Save handler
 	const handleSave = (field, value) => {
 		if (!selectedExercise) return;
 
@@ -160,7 +135,7 @@ const useSettingsLogic = () => {
 		dispatch(updateExerciseDataInStorageById(exerciseValue, updatedFields));
 	};
 
-	// Confirmation alerts before saving
+	// Confirmation alerts
 	const handleSaveDurationWithConfirm = () => {
 		Alert.alert(
 			"Confirmation to Save",
@@ -206,6 +181,11 @@ const useSettingsLogic = () => {
 	const handleIntensityValueChange = (callback) => {
 		const newValue = callback(intensityValue);
 
+		const saveAndDispatch = async (value) => {
+			dispatch(setIntensityValue(value));
+			await AsyncStorage.setItem("SelectedIntensity", value);
+		};
+
 		if (newValue === "intermediate") {
 			Alert.alert(
 				"Switching to Intermediate",
@@ -214,7 +194,7 @@ const useSettingsLogic = () => {
 					{ text: "Cancel", style: "cancel" },
 					{
 						text: "Proceed",
-						onPress: () => dispatch(setIntensityValue(newValue)),
+						onPress: () => saveAndDispatch(newValue),
 					},
 				]
 			);
@@ -226,12 +206,12 @@ const useSettingsLogic = () => {
 					{ text: "Cancel", style: "cancel" },
 					{
 						text: "Yes, I'm Ready!",
-						onPress: () => dispatch(setIntensityValue(newValue)),
+						onPress: () => saveAndDispatch(newValue),
 					},
 				]
 			);
 		} else {
-			dispatch(setIntensityValue(newValue));
+			saveAndDispatch(newValue);
 		}
 	};
 

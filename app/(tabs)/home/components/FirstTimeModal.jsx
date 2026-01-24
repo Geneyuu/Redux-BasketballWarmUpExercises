@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import {
+	Dimensions,
 	StatusBar,
 	StyleSheet,
 	Text,
@@ -10,6 +11,35 @@ import {
 import DropDownPicker from "react-native-dropdown-picker";
 import { useDispatch } from "react-redux";
 import { setIntensityValue } from "../../../store/slices/exerciseSlice";
+
+// SCREEN BREAKPOINTS
+const SCREEN_WIDTH = Dimensions.get("window").width;
+const isSmallPhone = SCREEN_WIDTH < 360;
+const isMidPhone = SCREEN_WIDTH >= 360 && SCREEN_WIDTH < 768;
+const isTablet = SCREEN_WIDTH >= 768;
+
+// RESPONSIVE VALUES
+let modalPadding, titleFontSize, textFontSize, noteFontSize, buttonPadding;
+
+if (isSmallPhone) {
+	modalPadding = 20;
+	titleFontSize = 18;
+	textFontSize = 13;
+	noteFontSize = 11;
+	buttonPadding = 10;
+} else if (isMidPhone) {
+	modalPadding = 30;
+	titleFontSize = 22;
+	textFontSize = 14;
+	noteFontSize = 12;
+	buttonPadding = 12;
+} else if (isTablet) {
+	modalPadding = 40;
+	titleFontSize = 24;
+	textFontSize = 16;
+	noteFontSize = 14;
+	buttonPadding = 14;
+}
 
 const FirstTimeModal = () => {
 	const dispatch = useDispatch();
@@ -60,12 +90,24 @@ const FirstTimeModal = () => {
 				backgroundColor="rgba(0, 0, 0, 0.5)"
 			/>
 			<View style={styles.overlay}>
-				<View style={styles.modalContainer}>
+				<View
+					style={[styles.modalContainer, { padding: modalPadding }]}
+				>
 					<View style={styles.modalContent}>
-						<Text style={styles.modalTitle}>
+						<Text
+							style={[
+								styles.modalTitle,
+								{ fontSize: titleFontSize },
+							]}
+						>
 							Let&#39;s Get Started
 						</Text>
-						<Text style={styles.modalText}>
+						<Text
+							style={[
+								styles.modalText,
+								{ fontSize: textFontSize },
+							]}
+						>
 							Please select your preference for performing the
 							Basketball Warm-Up Exercise:
 						</Text>
@@ -88,7 +130,10 @@ const FirstTimeModal = () => {
 						</View>
 
 						<TouchableOpacity
-							style={styles.saveButton}
+							style={[
+								styles.saveButton,
+								{ paddingVertical: buttonPadding },
+							]}
 							onPress={handleSaveDifficulty}
 						>
 							<Text style={styles.saveButtonText}>
@@ -96,7 +141,12 @@ const FirstTimeModal = () => {
 							</Text>
 						</TouchableOpacity>
 
-						<Text style={styles.noteText}>
+						<Text
+							style={[
+								styles.noteText,
+								{ fontSize: noteFontSize },
+							]}
+						>
 							Note: You can later change the Warmup Intensity
 							Level anytime in the settings.
 						</Text>
@@ -124,7 +174,6 @@ const styles = StyleSheet.create({
 		borderRadius: 10,
 		overflow: "hidden",
 		backgroundColor: "white",
-		padding: 30,
 		elevation: 10,
 		zIndex: 1000,
 	},
@@ -132,13 +181,11 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 	},
 	modalTitle: {
-		fontSize: 22,
 		marginBottom: 10,
 		textAlign: "center",
 		fontFamily: "Roboto-ExtraBold",
 	},
 	modalText: {
-		fontSize: 14,
 		marginBottom: 20,
 		textAlign: "center",
 		fontFamily: "Roboto-Regular",
@@ -159,7 +206,6 @@ const styles = StyleSheet.create({
 	},
 	saveButton: {
 		backgroundColor: "black",
-		paddingVertical: 12,
 		paddingHorizontal: 10,
 		borderRadius: 5,
 		width: "60%",
@@ -170,7 +216,6 @@ const styles = StyleSheet.create({
 		fontFamily: "Roboto-Regular",
 	},
 	noteText: {
-		fontSize: 12,
 		textAlign: "center",
 		marginTop: 15,
 		width: "75%",

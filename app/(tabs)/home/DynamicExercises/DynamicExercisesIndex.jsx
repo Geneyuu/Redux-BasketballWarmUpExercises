@@ -74,7 +74,7 @@ const DynamicExerciseIndex = () => {
 	return (
 		<View style={{ flex: 1, backgroundColor: "#fff" }}>
 			<FlatList
-				data={exercises.slice(15, 18)}
+				data={exercises.slice(16, 18)}
 				keyExtractor={(item) => item.id.toString()}
 				renderItem={renderExerciseItem}
 				ListHeaderComponent={renderHeader}

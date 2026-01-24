@@ -3,31 +3,16 @@ import { Stack, useRouter } from 'expo-router';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector } from 'react-redux';
 
 const Layout = () => {
      const router = useRouter();
-     // const pathname = usePathname(); // Use this hook to get the current path
-     // const [statusBarVisible, setStatusBarVisible] = useState(false); // State to control the status bar
-
-     // useFocusEffect(
-     //     React.useCallback(() => {
-     //         if (pathname === '/home/WholeBody/StartWarmUps') {
-     //             setStatusBarVisible(true); // Set status bar visible after delay
-     //         }
-
-     //         return () => {
-     //             setStatusBarVisible(false);
-     //         };
-     //     }, [pathname])
-     // );
+     const isPlaying = useSelector((state) => state.warmUp.isPlaying);
 
      return (
           <>
-               {/* Conditionally apply translucent status bar with a delay */}
-               {/* {statusBarVisible && <StatusBar barStyle='light-content' translucent backgroundColor='transparent' />} */}
-
                <Stack>
-                    {/* With Ball Screen */}
+                    {/* Upper Body Screen */}
                     <Stack.Screen
                          name="UpperBodyIndex"
                          options={{
@@ -45,12 +30,18 @@ const Layout = () => {
                                                   paddingHorizontal: wp(3),
                                              }}
                                         >
-                                             <TouchableOpacity
-                                                  onPress={() => router.back()}
-                                                  style={{ marginLeft: wp(2.5) }}
-                                             >
-                                                  <Ionicons name="arrow-back" size={hp(3.5)} color="black" />
-                                             </TouchableOpacity>
+                                             {!isPlaying && (
+                                                  <TouchableOpacity
+                                                       onPress={() => router.back()}
+                                                       style={{ marginLeft: wp(2.5) }}
+                                                  >
+                                                       <Ionicons
+                                                            name="arrow-back"
+                                                            size={hp(3.5)}
+                                                            color="black"
+                                                       />
+                                                  </TouchableOpacity>
+                                             )}
 
                                              <View style={{ flex: 1, alignItems: 'center' }}>
                                                   <Text
@@ -90,12 +81,18 @@ const Layout = () => {
                                                   paddingHorizontal: wp(3),
                                              }}
                                         >
-                                             <TouchableOpacity
-                                                  onPress={() => router.back()}
-                                                  style={{ marginLeft: wp(2.5) }}
-                                             >
-                                                  <Ionicons name="arrow-back" size={hp(3.5)} color="white" />
-                                             </TouchableOpacity>
+                                             {!isPlaying && (
+                                                  <TouchableOpacity
+                                                       onPress={() => router.back()}
+                                                       style={{ marginLeft: wp(2.5) }}
+                                                  >
+                                                       <Ionicons
+                                                            name="arrow-back"
+                                                            size={hp(3.5)}
+                                                            color="white"
+                                                       />
+                                                  </TouchableOpacity>
+                                             )}
 
                                              <View style={{ flex: 1, alignItems: 'center' }}>
                                                   <Text
@@ -134,28 +131,34 @@ const Layout = () => {
                                                   paddingHorizontal: wp(3),
                                              }}
                                         >
-                                             <TouchableOpacity
-                                                  onPress={() => router.back()}
-                                                  style={{
-                                                       flexDirection: 'row',
-                                                       alignItems: 'center',
-                                                       padding: 10,
-                                                       marginTop: hp(2.5),
-                                                       zIndex: 10,
-                                                  }}
-                                             >
-                                                  <Ionicons name="arrow-back" size={hp(3)} color="black" />
-                                                  <Text
+                                             {!isPlaying && (
+                                                  <TouchableOpacity
+                                                       onPress={() => router.back()}
                                                        style={{
-                                                            color: 'black',
-                                                            fontSize: hp(2),
-                                                            marginLeft: wp(2),
-                                                            fontFamily: 'Roboto-SemiBold',
+                                                            flexDirection: 'row',
+                                                            alignItems: 'center',
+                                                            padding: 10,
+                                                            marginTop: hp(2.5),
+                                                            zIndex: 10,
                                                        }}
                                                   >
-                                                       {/* Back */}
-                                                  </Text>
-                                             </TouchableOpacity>
+                                                       <Ionicons
+                                                            name="arrow-back"
+                                                            size={hp(3)}
+                                                            color="black"
+                                                       />
+                                                       <Text
+                                                            style={{
+                                                                 color: 'black',
+                                                                 fontSize: hp(2),
+                                                                 marginLeft: wp(2),
+                                                                 fontFamily: 'Roboto-SemiBold',
+                                                            }}
+                                                       >
+                                                            {/* Back */}
+                                                       </Text>
+                                                  </TouchableOpacity>
+                                             )}
 
                                              <View style={{ flex: 1, alignItems: 'center' }}>
                                                   <Text

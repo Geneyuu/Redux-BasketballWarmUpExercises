@@ -1,161 +1,290 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useFocusEffect, usePathname, useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert } from 'react-native';
-import { useSelector } from 'react-redux';
-import { exercises } from '../constants/exercises';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useFocusEffect, usePathname, useRouter } from "expo-router";
+import React, { useEffect, useRef } from "react";
+import { Alert } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { exercises } from "../constants/exercises";
+import {
+	nextExercise,
+	pauseExercise,
+	resetWarmUp,
+	setCurrentCategory,
+	setRemainingTime,
+	setResting,
+	startExercise,
+} from "../store/slices/warmUpSlice";
 
 export const useWarmUpLogic = () => {
-    const { allExercises, intensityValue } = useSelector((state) => state.exercise);
+	const { allExercises, intensityValue } = useSelector(
+		(state) => state.exercise
+	);
+	const {
+		isPlaying,
+		isResting,
+		currentExerciseIndex,
+		remainingTime,
+		currentCategory,
+	} = useSelector((state) => state.warmUp);
 
-    const router = useRouter();
-    const pathname = usePathname();
-    const videoRef = useRef(null);
-    const isRestingRef = useRef(false);
+	const dispatch = useDispatch();
+	const router = useRouter();
+	const pathname = usePathname();
+	const videoRef = useRef(null);
+	const isRestingRef = useRef(null);
+	const prevIntensityRef = useRef(intensityValue);
 
-    const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [isResting, setIsResting] = useState(false);
-    const [remainingTime, setRemainingTime] = useState(0);
+	// Determine exercise slice based on route
+	let sliceStart = 0;
+	let sliceEnd = 0;
+	let detectedCategory = "";
 
+	switch (true) {
+		case pathname.includes("LowerBody"):
+			sliceStart = 5;
+			sliceEnd = 10;
+			detectedCategory = "LowerBody";
+			break;
+		case pathname.includes("UpperBody"):
+			sliceStart = 10;
+			sliceEnd = 15;
+			detectedCategory = "UpperBody";
+			break;
+		case pathname.includes("WholeBody"):
+			sliceStart = 0;
+			sliceEnd = 18;
+			detectedCategory = "WholeBody";
+			break;
+		case pathname.includes("DynamicExercises"):
+			sliceStart = 15;
+			sliceEnd = 18;
+			detectedCategory = "DynamicExercises";
+			break;
+		default:
+			sliceStart = 0;
+			sliceEnd = 18;
+			detectedCategory = "Unknown";
+			break;
+	}
 
-useEffect(() => {
-    console.log('Current pathname:', pathname);
-}, [pathname]);
+	const limitedExercises = exercises
+		.slice(sliceStart, sliceEnd)
+		.map((exercise) => {
+			const updated = allExercises.find((ex) => ex.id === exercise.id);
+			return {
+				...exercise,
+				intensity: updated?.intensity || exercise.intensity,
+			};
+		});
 
+	const currentExercise = limitedExercises[currentExerciseIndex];
+	const nextExerciseData =
+		currentExerciseIndex < limitedExercises.length - 1
+			? limitedExercises[currentExerciseIndex + 1]
+			: null;
 
-    const path = pathname
-    let sliceStart = 0;
-    let sliceEnd = 0;
+	const intensitySettings =
+		currentExercise?.intensity?.[intensityValue] || {};
 
-    switch (true) {
-        case path.includes('LowerBody'):
-            sliceStart = 5;
-            sliceEnd = 10;
-            break;
-        case path.includes('UpperBody'):
-            sliceStart = 10;
-            sliceEnd = 15;
-            break;
-        case path.includes('WholeBody'):
-            sliceStart = 0;
-            sliceEnd = 18;
-            break;
-        case path.includes('DynamicExercises'):
-            sliceStart = 15;
-            sliceEnd = 18;
-            break;
-        default:
-            sliceStart = 0;
-            sliceEnd = 18;
-            break;
-    }
+	// Reset when intensity changes
+	useEffect(() => {
+		if (prevIntensityRef.current !== intensityValue) {
+			prevIntensityRef.current = intensityValue;
+			dispatch(resetWarmUp());
+			dispatch(setRemainingTime(intensitySettings.duration?.min));
+			dispatch(setCurrentCategory(detectedCategory));
+			// dispatch(pauseExercise());
+		}
+	}, [intensityValue, intensitySettings.duration?.min, detectedCategory]);
 
-    // Combine constant and asyncStorage exercises
-    const limitedExercises = exercises.slice(sliceStart, sliceEnd).map((exercise) => {
-        const updatedExercise = allExercises.find((ex) => ex.id === exercise.id);
-        return {
-            ...exercise,
-            intensity: updatedExercise?.intensity ||exercise.intensity,
-        };
-    });
+	// Handle route changes
+	useEffect(() => {
+		const ignoredRoutes = ["Search", "Profile", "Settings"];
+		const isIgnored = ignoredRoutes.some((route) =>
+			pathname.includes(route)
+		);
 
-    const currentExercise = limitedExercises[currentExerciseIndex];
-    const intensitySettings = currentExercise.intensity[intensityValue];
+		if (isIgnored) return;
 
-    const nextExercise =
-        currentExerciseIndex < limitedExercises.length - 1
-            ? limitedExercises[currentExerciseIndex + 1]
-            : null;
+		if (currentCategory !== detectedCategory) {
+			dispatch(resetWarmUp());
+			dispatch(setRemainingTime(intensitySettings.duration?.min));
+			dispatch(setCurrentCategory(detectedCategory));
+			// dispatch(pauseExercise());
+			AsyncStorage.setItem("lastCategory", detectedCategory);
+		}
+	}, [detectedCategory, currentCategory, pathname]);
 
-    useEffect(() => {
-        const newDuration = isResting ? intensitySettings.restDuration.min : intensitySettings.duration.min;
-        setRemainingTime(newDuration);
-    }, [intensityValue, isResting, allExercises]);
+	const totalDuration = isResting
+		? intensitySettings.restDuration?.min
+		: intensitySettings.duration?.min;
 
-    const totalDuration = isResting ? intensitySettings.restDuration.min : intensitySettings.duration.min;
-    const progress = 1 - remainingTime / totalDuration;
+	const progress = 1 - remainingTime / (totalDuration || 1);
 
-    useEffect(() => {
-        if (!isPlaying) return;
+	useEffect(() => {
+		if (remainingTime === 0) {
+			dispatch(setRemainingTime(totalDuration));
+		}
+	}, [intensityValue, isResting, currentExerciseIndex]);
 
-        const timer = setInterval(() => {
-            setRemainingTime((prev) => {
-                if (prev <= 0) {
-                    clearInterval(timer);
+	// Countdown logic
+	useEffect(() => {
+		if (!isPlaying) return;
 
-                    setTimeout(() => {
-                        if (!isResting) {
-                            setIsResting(true);
-                        } else {
-                            if (currentExerciseIndex < limitedExercises.length - 1) {
-                                setCurrentExerciseIndex((prev) => prev + 1);
-                                setIsResting(false);
-                            } else {
-                                Alert.alert('Workout Complete!', 'Great job! You can now Play Basketball!');
-                                setIsPlaying(false);
-                                router.replace('/(tabs)/');
-                            }
-                        }
-                    }, 300);
+		const timer = setInterval(() => {
+			if (remainingTime <= 0) {
+				clearInterval(timer);
 
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
+				setTimeout(() => {
+					if (!isResting) {
+						dispatch(setResting(true));
+					} else {
+						if (
+							currentExerciseIndex <
+							limitedExercises.length - 1
+						) {
+							dispatch(nextExercise());
+						} else {
+							// const finishWorkout = async () => {
+							// 	try {
+							// 		await AsyncStorage.setItem(
+							// 			"lastCategory",
+							// 			""
+							// 		);
+							// 	} catch (error) {
+							// 		console.error(
+							// 			"Error saving lastCategory:",
+							// 			error
+							// 		);
+							// 	}
+							// 	Alert.alert(
+							// 		"Workout Complete!",
+							// 		"Great job! You can now Play Basketball!"
+							// 	);
+							// 	dispatch(pauseExercise());
+							// 	dispatch(resetWarmUp());
+							// 	router.replace("/(tabs)/");
+							// };
+							Alert.alert(
+								"Workout Complete!",
+								"Great job! You can now Play Basketball!"
+							);
+							dispatch(pauseExercise());
+							dispatch(resetWarmUp());
+							router.replace("/(tabs)/");
 
-        return () => clearInterval(timer);
-    }, [isPlaying, isResting, intensityValue, allExercises]);
+							// finishWorkout();
+						}
+					}
+				}, 1000);
+			} else {
+				dispatch(setRemainingTime(remainingTime - 1));
+			}
+		}, 1000);
 
-    const togglePlayPause = async () => {
-        if (isPlaying) {
-            await videoRef.current?.pauseAsync();
-        } else {
-            await videoRef.current?.playAsync();
-        }
-        setIsPlaying(!isPlaying);
-    };
+		return () => clearInterval(timer);
+	}, [isPlaying, remainingTime, isResting]);
 
-    const handleRestart = () => {
-        setIsPlaying(false);
-        setIsResting(false);
-        setRemainingTime(intensitySettings.duration.min);
-    };
+	const togglePlayPause = async () => {
+		if (isPlaying) {
+			await videoRef.current?.pauseAsync();
+			dispatch(pauseExercise());
+		} else {
+			await videoRef.current?.playAsync();
+			dispatch(startExercise());
+		}
+	};
 
-    useFocusEffect(
-        React.useCallback(() => {
-            if (!isRestingRef.current) {
-                setIsPlaying(false);
-            } else {
-                setIsPlaying(true);
-            }
+	const handleRestart = () => {
+		dispatch(pauseExercise());
+		dispatch(setResting(false));
+		Alert.alert(
+			"Restart Warm-Up Exercises",
+			"Restart Exercise will reset the exercises from the start, Do you wish to Restart?",
+			[
+				{
+					text: "Cancel",
+					style: "cancel",
+				},
+				{
+					text: "Restart",
+					onPress: () => dispatch(resetWarmUp()),
+					style: "destructive",
+				},
+			]
+		);
+	};
 
-            return () => {
-                setIsPlaying(false);
-            };
-        }, [])
-    );
+	useEffect(() => {
+		isRestingRef.current = isResting;
+	}, [isResting]);
 
-    useEffect(() => {
-        isRestingRef.current = isResting;
-    }, [isResting]);
+	useFocusEffect(
+		React.useCallback(() => {
+			// Always pause when screen is re-entered
+			dispatch(pauseExercise());
 
-    console.log(isResting);
+			const shouldAutoPlay =
+				isRestingRef.current && currentCategory === detectedCategory;
 
-    return {
-        videoRef,
-        currentExerciseIndex,
-        isPlaying,
-        isResting,
-        remainingTime,
-        progress,
-        currentExercise,
-        nextExercise,
-        intensitySettings,
-        togglePlayPause,
-        handleRestart,
-        limitedExercises,
-        intensityValue,
-    };
+			if (shouldAutoPlay) {
+				dispatch(startExercise());
+			}
+
+			return () => {
+				// Always pause when navigating away
+				dispatch(pauseExercise());
+			};
+		}, [currentCategory, detectedCategory])
+	);
+
+	// // Load saved progress on mount
+
+	// useEffect(() => {
+	// 	const loadProgress = async () => {
+	// 		const saved = await AsyncStorage.getItem("warmUpProgress");
+	// 		if (saved) {
+	// 			const progress = JSON.parse(saved);
+	// 			if (progress.currentExerciseIndex !== undefined)
+	// 				dispatch({
+	// 					type: "warmUp/setCurrentExerciseIndex",
+	// 					payload: progress.currentExerciseIndex,
+	// 				});
+	// 		}
+	// 	};
+	// 	loadProgress();
+	// }, []);
+
+	// //  Save progress on any state change
+	// useEffect(() => {
+	// 	const saveProgress = async () => {
+	// 		const data = {
+	// 			remainingTime,
+	// 			isResting,
+	// 			currentExerciseIndex,
+	// 		};
+	// 		await AsyncStorage.setItem("warmUpProgress", JSON.stringify(data));
+
+	// 		if (isResting) {
+	// 			dispatch(startExercise());
+	// 		}
+	// 	};
+	// 	saveProgress();
+	// }, [remainingTime, isResting]);
+
+	return {
+		videoRef,
+		currentExerciseIndex,
+		isPlaying,
+		isResting,
+		remainingTime,
+		progress,
+		currentExercise,
+		nextExercise: nextExerciseData,
+		intensitySettings,
+		togglePlayPause,
+		handleRestart,
+		limitedExercises,
+		intensityValue,
+	};
 };
